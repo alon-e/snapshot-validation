@@ -121,9 +121,10 @@ var validateSnapshot = async() => {
           return false;
         }
       }));
-    if(validationResults.filter(r => r).length < 2) {
-      console.log("FATAL ERROR: Key reuse Bundle provided doesn't validate - probably used old (Curl) signature: ", entry.bundles);
-    }
+      let validSigCount = validationResults.filter(r => r).length;
+      if(validSigCount < 2) {
+         console.log("FATAL ERROR: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, " :: " , entry.bundles);
+      }
   }
 
 
