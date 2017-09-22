@@ -21,7 +21,7 @@ function doRequest(url) {
 }
 
 // construct iota.lib.js instance
-var iotaNode = 'http://m1.iotaledger.net:15265'
+var iotaNode = 'http://localhost:14265'
 let iota = new IOTA({
     provider: iotaNode
 });
@@ -35,19 +35,19 @@ const PgetTransactionsObjects = promisify(iota.api.getTransactionsObjects.bind(i
 const PgetBundle = promisify(iota.api.getBundle.bind(iota.api));
 
 var validateBundle = async(bundleHash) => {
-  let hashes = await PfindTransactions({
-      bundles: [bundleHash]
-  });
-  let objects = await PgetTransactionsObjects(hashes);
-  let tails = objects.filter(o => o.currentIndex == 0);
-  if (!tails) {
-    console.log("Warning: no transactions found for bundle:", bundleHash);
-    return true;
-  } else {
-    //validate signatures
-    let bundles = await PgetBundle(tails[0])
-    return (bundles != null)
-  }
+    let hashes = await PfindTransactions({
+        bundles: [bundleHash]
+    });
+    let objects = await PgetTransactionsObjects(hashes);
+    let tails = objects.filter(o => o.currentIndex == 0);
+    if (!tails) {
+      console.log("Warning: no transactions found for bundle:", bundleHash);
+      return true;
+    } else {
+      //validate signatures
+      let bundles = await PgetBundle(tails[0].hash)
+      return (bundles != null)
+    }
 }
 var validateSnapshot = async() => {
   console.log("# getting Aug 8th Snapshot...");
@@ -110,12 +110,19 @@ var validateSnapshot = async() => {
 
   //go over each KEY_REUSE
   var keyReuseCases = snapshotCases.filter(e => e.category === 'KEY_REUSE');
-  console.log("checking Key Reuse Cases ...");
+  console.log("checking Key Reuse Cases ... (", keyReuseCases.length, ")");
   for (let entry of keyReuseCases) {
       //validate the provided bundles
-      let validationResults = Promise.all(entry.bundles.map(validateBundle));
-    if(validationResults.filter(r => !r).length > 0) {
-      console.log("FATAL ERROR: Key reuse Bundle provided doesn't validate: ", entry.bundles);
+      console.log("# validating: " + entry.address);
+      let validationResults = await Promise.all(entry.bundles.map(async (bundle) => {
+        try {
+          return (await validateBundle(bundle));
+        } catch(e) {
+          return false;
+        }
+      }));
+    if(validationResults.filter(r => r).length < 2) {
+      console.log("FATAL ERROR: Key reuse Bundle provided doesn't validate - probably used old (Curl) signature: ", entry.bundles);
     }
   }
 
@@ -123,7 +130,7 @@ var validateSnapshot = async() => {
   //go over each CURL_USED + CURL_UNUSED
   var CurlSnapshotCases = snapshotCases.filter(e => (e.category === 'CURL_USED' ||e.category === 'CURL_UNUSED') );
   //check that they are in Aug08 snapshot
-  console.log("checking Curl Snapshot Cases ...");
+  console.log("checking Curl Snapshot Cases ... (", CurlSnapshotCases.length, ")");
   CurlSnapshotCases.forEach((entry) => {
     var existsInCurlSnapshot = Aug_08_Balances.hasOwnProperty(entry.address);
     if (!existsInCurlSnapshot) {
