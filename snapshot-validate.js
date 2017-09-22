@@ -188,7 +188,7 @@ var validateSnapshot = async() => {
           }));
           let validSigCount = validationResults.filter(r => r).length;
           if(validSigCount < 2) {
-             console.log("FATAL ERROR: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, " :: " , entry.bundles);
+             console.log("WARNING: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, "balance:", entry.balance, " :: ", entry.bundles);
           }
         }
     }
