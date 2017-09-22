@@ -149,7 +149,7 @@ const latestStateWithCategory = async() => {
           return e;
         }
         let objects = await PgetTransactionsObjects(hashes);
-        let spendCount = objects.filter(o => o.value < 0).length;
+        let spendCount = objects.filter(o => o.value < 0 && o.timestamp < 1506098151).length;
 
         e.category = (spendCount > 1) ? 'KEY_REUSE' : 'NONE';
         return e;
@@ -200,7 +200,7 @@ const latestStateWithCategory = async() => {
 
 var validateSnapshot = function(latestState) {
 
-    var snapshotUrl = 'https://transfer.sh/cpU8o/snapshot_216223.json'
+    var snapshotUrl = 'https://transfer.sh/xcH2C/snapshot_216223.json'
 
     request(snapshotUrl, function (error, response, body) {
 
