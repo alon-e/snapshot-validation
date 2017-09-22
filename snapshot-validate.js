@@ -110,22 +110,7 @@ var validateSnapshot = async() => {
 
   //go over each KEY_REUSE
   var keyReuseCases = snapshotCases.filter(e => e.category === 'KEY_REUSE');
-  console.log("checking Key Reuse Cases ... (", keyReuseCases.length, ")");
-  for (let entry of keyReuseCases) {
-      //validate the provided bundles
-      console.log("# validating: " + entry.address);
-      let validationResults = await Promise.all(entry.bundles.map(async (bundle) => {
-        try {
-          return (await validateBundle(bundle));
-        } catch(e) {
-          return false;
-        }
-      }));
-      let validSigCount = validationResults.filter(r => r).length;
-      if(validSigCount < 2) {
-         console.log("FATAL ERROR: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, " :: " , entry.bundles);
-      }
-  }
+
 
 
   //go over each CURL_USED + CURL_UNUSED
@@ -149,18 +134,59 @@ var validateSnapshot = async() => {
   var IF_sum = keyReuseSum + CurlSnapshotSum
   console.log("MOVED BALANCE CORRECT: ", parseInt(IF_sum) === parseInt(proposedSnapshotBalances[IF_address]), IF_sum, proposedSnapshotBalances[IF_address]);
 
-  //move the 2 curl addresses
-
   var rest = snapshotCases.filter(e => e.category === 'NONE');
   //check all the NONE addresses & compare to snapshot.ixi
   console.log("checking the rest ...");
   rest.forEach((entry) => {
-    var sameBalance = parseInt(ixiBalances[entry.address]) === parseInt(entry.balance);
-    if (!sameBalance) {
+    var sameBalanceIXI = parseInt(ixiBalances[entry.address]) === parseInt(entry.balance);
+    if (!sameBalanceIXI) {
         console.log("FATAL ERROR: Balance incorrect for: ", entry.address);
-        console.log("Balance (proposed snapshot vs. local): ", entry.balance, parseInt(ixiBalances[entry.address]))
+        console.log("Balance (proposed snapshot cases vs. local): ", entry.balance, parseInt(ixiBalances[entry.address]))
     }
   });
+
+
+    //move the 2 curl addresses
+    rest.forEach((entry) => {
+      //   4115709782263 on QGYKGMGSDAKRVRPJAMXDBYSREZIEASSZZKFRPRJDSNMMZBITTTZUQZYTONJVDBBACWYHOWRJHKEPYKRBS
+      // newAddress=CLYICQNTDXMVOMRIMCAL9XGIACQIIAALZQCAHRATFLEPXQKIYFCSDNTYZWJAWHPCNAUWVKPZFEYQJGJT9
+      if (entry.address === "QGYKGMGSDAKRVRPJAMXDBYSREZIEASSZZKFRPRJDSNMMZBITTTZUQZYTONJVDBBACWYHOWRJHKEPYKRBS") {
+        entry.address =     "CLYICQNTDXMVOMRIMCAL9XGIACQIIAALZQCAHRATFLEPXQKIYFCSDNTYZWJAWHPCNAUWVKPZFEYQJGJT9";
+      }
+
+      // 30770000000 on KGUYGYFKSHCXPSJAMYBZKRM9EXGBL9ZKYXJITVRLQFYZKEFPXOCDVTLE9ODVAHNSUZNVSJADRHDMPWQRU
+      // newAddress=FM9TXYBQMDBABOBGGDCSGWLCJIHSWRZSFLNJXUGZRJOFWKYAUBDNQBQBEA9KHHBIWXURCDSQOVOJSRYMB
+      if (entry.address === "KGUYGYFKSHCXPSJAMYBZKRM9EXGBL9ZKYXJITVRLQFYZKEFPXOCDVTLE9ODVAHNSUZNVSJADRHDMPWQRU") {
+        entry.address =     "FM9TXYBQMDBABOBGGDCSGWLCJIHSWRZSFLNJXUGZRJOFWKYAUBDNQBQBEA9KHHBIWXURCDSQOVOJSRYMB";
+      }
+    });
+
+
+    rest.forEach((entry) => {
+      var sameBalanceIRI = parseInt(proposedSnapshotBalances[entry.address]) === parseInt(entry.balance);
+      if (!sameBalanceIRI) {
+          console.log("FATAL ERROR: Balance incorrect for: ", entry.address);
+          console.log("Balance (proposed snapshot cases vs. IRI): ", entry.balance, parseInt(proposedSnapshotBalances[entry.address]))
+      }
+    });
+
+    console.log("checking Key Reuse Cases ... (", keyReuseCases.length, ")");
+    for (let entry of keyReuseCases) {
+        //validate the provided bundles
+        console.log("# validating: " + entry.address);
+        let validationResults = await Promise.all(entry.bundles.map(async (bundle) => {
+          try {
+            return (await validateBundle(bundle));
+          } catch(e) {
+            return false;
+          }
+        }));
+        let validSigCount = validationResults.filter(r => r).length;
+        if(validSigCount < 2) {
+           console.log("FATAL ERROR: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, " :: " , entry.bundles);
+        }
+    }
+
 }
 
 const main = async() => {
