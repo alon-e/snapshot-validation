@@ -170,20 +170,26 @@ var validateSnapshot = async() => {
       }
     });
 
+    console.log("Done checking balances.");
+
+    console.log("----");
+    console.log("verifing key reuse of addresses:");
     console.log("checking Key Reuse Cases ... (", keyReuseCases.length, ")");
     for (let entry of keyReuseCases) {
         //validate the provided bundles
         console.log("# validating: " + entry.address);
-        let validationResults = await Promise.all(entry.bundles.map(async (bundle) => {
-          try {
-            return (await validateBundle(bundle));
-          } catch(e) {
-            return false;
+        if (entry.bundles) {
+          let validationResults = await Promise.all(entry.bundles.map(async (bundle) => {
+            try {
+              return (await validateBundle(bundle));
+            } catch(e) {
+              return false;
+            }
+          }));
+          let validSigCount = validationResults.filter(r => r).length;
+          if(validSigCount < 2) {
+             console.log("FATAL ERROR: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, " :: " , entry.bundles);
           }
-        }));
-        let validSigCount = validationResults.filter(r => r).length;
-        if(validSigCount < 2) {
-           console.log("FATAL ERROR: Number of valid signatures was less than 2 - probably used old (Curl) signature: ", validSigCount, " :: " , entry.bundles);
         }
     }
 
