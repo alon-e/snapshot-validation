@@ -171,7 +171,7 @@ const latestStateWithCategory = async() => {
     fs.writeFileSync("latestStateWithCategory_Curl_Reuse.json", JSON.stringify( curlResults.concat(keyReuseResults)))
 
     //Move funds to IOTA foundation address:
-    var move_address = "FFUIAREGAAAHNTPJRGRFCNCNOTKTKPWJEGUDWQHZVVO9MTAXZIDMXBMWJXTLUBHNFNKYCCTQUXOUYFKX99MUZJEPYD"
+    var move_address = "FFUIAREGAAAHNTPJRGRFCNCNOTKTKPWJEGUDWQHZVVO9MTAXZIDMXBMWJXTLUBHNFNKYCCTQUXOUYFKX9"
 
     console.log("Sum of Curl snapshot addresses, moved to IF address: " + curlSum);
     console.log("Sum of key reused addresses, moved to IF address: " + keyReuseSum);
