@@ -137,6 +137,7 @@ const latestStateWithCategory = async() => {
     console.log("# Determining all latestState address that have reused the private key...");
     let constructPromise = async(e) => {
         if (e.address in skipAddresses) {
+          //TODO add 2 bundles as proof
           e.category = 'KEY_REUSE';
           return e;
         }
@@ -151,6 +152,7 @@ const latestStateWithCategory = async() => {
         let objects = await PgetTransactionsObjects(hashes);
         let spendCount = objects.filter(o => o.value < 0 && o.timestamp < 1506098151).length;
 
+        //TODO add 2 bundles as proof
         e.category = (spendCount > 1) ? 'KEY_REUSE' : 'NONE';
         return e;
     };
