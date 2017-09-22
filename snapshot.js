@@ -29,7 +29,7 @@ skipAddresses['LGZ9YCSHKCFQJFFQTRRGSNAHFVCBUYYDVNIJPVBMFOYPPFREKNQVTWSVNFLKZTVWJ
 skipAddresses['YYMKSTBMFBYQPYQHZEHHBNYCODMJJCOYDYNOBSQR9BAMSJUTCTO9CEIUFBBW9FLUAIHRPLXIKXMAWTBCW'] = 3;
 skipAddresses['TECQVRG9MSCZDSLL9FFRVEG9HPJCBQHJSJPQITMRYZZFBEKSGRLKDKAVZRWWJHKTVLQVAVQG9DHBGJASW'] = 995;
 
-const MAX_PER_CHECK = 20;
+const MAX_PER_CHECK = 100;
 const CATEROGIES_TO_COLLECT = ['CURL_UNUSED', 'CURL_USED', 'KEY_REUSE', 'DUST'];
 const DUST_THRESHOLD = 0;
 
@@ -150,10 +150,25 @@ const latestStateWithCategory = async() => {
           return e;
         }
         let objects = await PgetTransactionsObjects(hashes);
-        let spendCount = objects.filter(o => o.value < 0 && o.timestamp < 1506098151).length;
 
-        //TODO add 2 bundles as proof
-        e.category = (spendCount > 1) ? 'KEY_REUSE' : 'NONE';
+        // 1506096012 is timestamp of last milestone
+        let spends = objects.filter(o => o.value < 0 && o.timestamp < 1506096013);
+
+        let spendCount = {};
+        spends.forEach(spend => {
+          if(!(spend.bundle in spendCount)) {
+            spendCount[spend.bundle] = spend;
+          }
+        });
+
+        let uniqueSpends = Object.keys(spendCount);
+
+        if (uniqueSpends.length > 1) {
+          e.category = 'KEY_REUSE';
+          e.bundles = uniqueSpends;
+        } else {
+          e.category = 'NONE';
+        }
         return e;
     };
 
