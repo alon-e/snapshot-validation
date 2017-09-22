@@ -27,12 +27,28 @@ let iota = new IOTA({
 });
 
 const Aug_08_Url = "https://raw.githubusercontent.com/iotaledger/iri/c23298fb27bb48cdd166abae8a8792d2f975ff79/src/main/resources/Snapshot.txt"
-const proposedSnapshotUrl = "http://analytics.iotaledger.net/Snapshot.txt"
-const snapshotCasesUrl = "http://analytics.iotaledger.net/latestStateWithCategory_pre.json"
+const proposedSnapshotUrl = "http://analytics.iotaledger.net/m5_sn.txt"
+const snapshotCasesUrl = "http://analytics.iotaledger.net/m5_l_p.json"
 
 const PfindTransactions = promisify(iota.api.findTransactions.bind(iota.api));
 const PgetTransactionsObjects = promisify(iota.api.getTransactionsObjects.bind(iota.api));
+const PgetBundle = promisify(iota.api.getBundle.bind(iota.api));
 
+var validateBundle = async(bundleHash) => {
+  let hashes = await PfindTransactions({
+      bundles: [bundleHash]
+  });
+  let objects = await PgetTransactionsObjects(hashes);
+  let tails = objects.filter(o => o.currentIndex == 0);
+  if (!tails) {
+    console.log("Warning: no transactions found for bundle:", bundleHash);
+    return true;
+  } else {
+    //validate signatures
+    let bundles = await PgetBundle(tails[0])
+    return (bundles != null)
+  }
+}
 var validateSnapshot = async() => {
   console.log("# getting Aug 8th Snapshot...");
 
@@ -95,7 +111,13 @@ var validateSnapshot = async() => {
   //go over each KEY_REUSE
   var keyReuseCases = snapshotCases.filter(e => e.category === 'KEY_REUSE');
   console.log("checking Key Reuse Cases ...");
-  //TODO check the 2 provided bundles
+  for (let entry of keyReuseCases) {
+      //validate the provided bundles
+      let validationResults = Promise.all(entry.bundles.map(validateBundle));
+    if(validationResults.filter(r => !r).length > 0) {
+      console.log("FATAL ERROR: Key reuse Bundle provided doesn't validate: ", entry.bundles);
+    }
+  }
 
 
   //go over each CURL_USED + CURL_UNUSED
@@ -123,7 +145,6 @@ var validateSnapshot = async() => {
 
   var rest = snapshotCases.filter(e => e.category === 'NONE');
   //check all the NONE addresses & compare to snapshot.ixi
-  //TODO ixi & compare to that
   console.log("checking the rest ...");
   rest.forEach((entry) => {
     var sameBalance = parseInt(ixiBalances[entry.address]) === parseInt(entry.balance);
