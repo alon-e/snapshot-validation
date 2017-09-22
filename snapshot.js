@@ -200,7 +200,7 @@ const latestStateWithCategory = async() => {
 
 var validateSnapshot = function(latestState) {
 
-    var snapshotUrl = 'https://transfer.sh/xcH2C/snapshot_216223.json'
+    var snapshotUrl = 'https://transfer.sh/LFvsv/snapshot_216223.json'
 
     request(snapshotUrl, function (error, response, body) {
 
