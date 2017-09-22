@@ -230,6 +230,10 @@ var validateSnapshot = function(latestState) {
 
         console.log("LATEST STATE EQUALS SNAPSHOT: ", Object.keys(snapshotBalances).length === 0 && snapshotBalances.constructor === Object);
 
+        //format for Snapshot.txt
+        var latestStateBalances = '';
+        latestState.forEach(e => latestStateBalances += e.address + ":" + e.balance +"\n");
+        fs.writeFileSync("nextSnapshot.txt", latestStateBalances)
     })
 
 }
