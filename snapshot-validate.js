@@ -27,8 +27,8 @@ let iota = new IOTA({
 });
 
 const Aug_08_Url = "https://raw.githubusercontent.com/iotaledger/iri/c23298fb27bb48cdd166abae8a8792d2f975ff79/src/main/resources/Snapshot.txt"
-const proposedSnapshotUrl = "http://analytics.iotaledger.net/m5_sn.txt"
-const snapshotCasesUrl = "http://analytics.iotaledger.net/m5_l_p.json"
+const proposedSnapshotUrl = "https://ipfs.io/ipfs/QmeC5kYrUXQpcAF8ZQ7Vwsq6STP3xV13HpNgFn1XzbPrdU/m5_sn.txt"
+const snapshotCasesUrl = "https://ipfs.io/ipfs/Qmeb4B5AEi5MWTreKPRtufBFRFWRVTpZkBpX6FeaXCAe3B"
 
 const PfindTransactions = promisify(iota.api.findTransactions.bind(iota.api));
 const PgetTransactionsObjects = promisify(iota.api.getTransactionsObjects.bind(iota.api));
